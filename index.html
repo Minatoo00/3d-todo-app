@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TODO HyperCube</title>
+  <style>
+    :root{
+      --bg1:#0b0b10;
+      --bg2:#180632;
+      --accent1:#57f2ff;
+      --accent2:#ff59d6;
+      --accent3:#ffe86b;
+      --shadow:0 30px 80px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      min-height:100vh;
+      margin:0;
+      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans Japanese","Noto Sans",sans-serif;
+      color:#e9ebff;
+      background:
+        radial-gradient(1200px 700px at 10% 20%, rgba(255,89,214,.35), transparent 55%),
+        radial-gradient(900px 500px at 90% 30%, rgba(87,242,255,.35), transparent 55%),
+        radial-gradient(900px 500px at 50% 90%, rgba(255,232,107,.25), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+    .stage{
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:40px 16px 80px;
+      perspective:1200px;
+    }
+    .card{
+      width:min(980px, 96vw);
+      padding:24px;
+      border-radius:calc(var(--radius)*1.2);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+      transform-style: preserve-3d;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-60px -150px auto -150px;
+      height:220px;
+      transform: rotateZ(-12deg);
+      background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3),var(--accent1));
+      filter: blur(16px) saturate(1.5);
+      opacity:.35;
+      animation: sweep 12s linear infinite;
+    }
+    @keyframes sweep{
+      0%{transform: translateX(-25%) rotateZ(-12deg);}
+      50%{transform: translateX(25%) rotateZ(-12deg);}
+      100%{transform: translateX(-25%) rotateZ(-12deg);}
+    }
+    h1{
+      margin:0;
+      letter-spacing:.06em;
+      font-size: clamp(22px, 3.6vw, 44px);
+      text-shadow: 0 12px 30px rgba(0,0,0,.25);
+    }
+    .sub{
+      margin:10px 0 22px;
+      color: rgba(233,235,255,.72);
+      font-size: 14px;
+    }
+    .chrome{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .inputWrap{
+      flex: 1 1 360px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      transform-style:preserve-3d;
+    }
+    input[type="text"]{
+      flex:1;
+      padding:12px 14px;
+      border-radius:var(--radius);
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(12,10,24,.55);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      transition: transform .2s ease, box-shadow .2s ease, border .2s ease;
+    }
+    input:focus{
+      border-color: rgba(87,242,255,.6);
+      box-shadow: 0 0 0 5px rgba(87,242,255,.12);
+      transform: translateZ(6px);
+    }
+    .btn{
+      border:0;
+      border-radius:var(--radius);
+      padding:12px 14px;
+      font-weight:700;
+      letter-spacing:.02em;
+      cursor:pointer;
+      color:#0b0b10;
+      background: radial-gradient(120px 60px at 30% 20%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%),
+                  linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));
+      box-shadow: 0 15px 60px rgba(0,0,0,.35);
+      transition: transform .15s ease, filter .2s ease, box-shadow .2s ease;
+      user-select:none;
+      transform-style:preserve-3d;
+    }
+    .btn:hover{filter:saturate(1.1) contrast(1.05);}
+    .btn:active{transform: translateZ(6px) scale(.98);}
+    .btn2{
+      background: rgba(255,255,255,.05);
+      color:#e9ebff;
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .hud{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      font-size:13px;
+      color:rgba(233,235,255,.85);
+      box-shadow: 0 18px 60px rgba(0,0,0,.30);
+    }
+    .list{
+      margin-top:20px;
+      list-style:none;
+      padding:0;
+      display:grid;
+      gap:14px;
+      transform-style: preserve-3d;
+    }
+    .task{
+      display:grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap:12px;
+      align-items:center;
+      padding:14px 14px;
+      border-radius:calc(var(--radius)*1.1);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow: 0 30px 80px rgba(0,0,0,.35);
+      transform: translateZ(0) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+      transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .25s ease, border .25s ease, background .25s ease;
+      position:relative;
+      overflow:hidden;
+      transform-style: preserve-3d;
+    }
+    .task::before{
+      content:"";
+      position:absolute;
+      inset:-90px -150px auto -150px;
+      height:200px;
+      transform: rotateZ(-10deg);
+      background: linear-gradient(90deg, rgba(255,232,107,.55), rgba(87,242,255,.45), rgba(255,89,214,.55));
+      filter: blur(18px);
+      opacity:0;
+      transition: opacity .25s ease;
+      pointer-events:none;
+    }
+    .task:hover{
+      transform: translateZ(12px) rotateX(6deg) rotateY(-6deg);
+      border-color: rgba(87,242,255,.35);
+      filter: saturate(1.1);
+    }
+    .task:hover::before{opacity:.45;}
+    .dot{
+      width:12px;
+      height:12px;
+      border-radius:999px;
+      background: radial-gradient(circle at 30% 20%, #fff, var(--accent1) 40%, var(--accent2) 80%);
+      box-shadow: 0 0 0 3px rgba(87,242,255,.15);
+      transform: translateZ(10px);
+    }
+    .title{
+      margin:0;
+      font-weight:800;
+      letter-spacing:.01em;
+      transform-style: preserve-3d;
+    }
+    .meta{
+      grid-column: 2 / -1;
+      font-size:12px;
+      color: rgba(233,235,255,.62);
+      transform-style: preserve-3d;
+    }
+    .task.done{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+      border-color: rgba(255,255,255,.13);
+      filter: saturate(.95) contrast(.95);
+    }
+    .task.done .title{
+      text-decoration: line-through;
+      opacity:.8;
+    }
+    .task.done .meta{opacity:.65;}
+    .task.done .dot{
+      background: radial-gradient(circle at 30% 20%, #fff, #adffb2 45%, #57f2ff 85%);
+      box-shadow: 0 0 0 3px rgba(173,255,178,.18);
+    }
+    .iconBtn{
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.18);
+      color: #e9ebff;
+      border-radius: 14px;
+      padding:9px 11px;
+      cursor:pointer;
+      transition: transform .15s ease, background .2s ease, border .2s ease, filter .2s ease;
+      transform-style: preserve-3d;
+    }
+    .iconBtn:hover{background: rgba(255,255,255,.06); border-color: rgba(87,242,255,.32); filter:saturate(1.05);}
+    .iconBtn:active{transform: translateZ(6px) scale(.98);}
+    .small{
+      font-size: 13px;
+    }
+    .pop{
+      animation: popIn .55s cubic-bezier(.2,.9,.2,1);
+    }
+    @keyframes popIn{
+      0%{
+        opacity: 0;
+        transform: translateY(18px) rotateX(16deg) rotateY(-12deg) scale(.97);
+        filter: blur(2px);
+      }
+      100%{
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+        filter: blur(0);
+      }
+    }
+    .bye{
+      animation: bye .35s cubic-bezier(.6,.1,.6,1) forwards;
+    }
+    @keyframes bye{
+      to{
+        opacity:0;
+        transform: translateY(28px) rotateX(-16deg) rotateY(8deg) scale(.95);
+        filter: blur(5px);
+      }
+    }
+    .glow{
+      position:absolute;
+      inset:-20px;
+      background: radial-gradient(closest-side, rgba(255,255,255,.05), transparent 70%);
+      pointer-events:none;
+      mix-blend-mode: screen;
+      opacity:0;
+      transition: opacity .25s ease;
+    }
+    .task:hover .glow{opacity:1;}
+    .watermark{
+      position: fixed;
+      right: 16px;
+      bottom: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: rgba(233,235,255,.22);
+      font-size: 12px;
+      letter-spacing: .1em;
+      user-select:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <section class="card" id="card">
+      <h1>TODO HyperCube</h1>
+      <p class="sub">奇抜で3Dっぽい空間で、タスクを浮遊させよう。</p>
+
+      <div class="chrome">
+        <div class="inputWrap">
+          <input id="taskInput" type="text" placeholder="タスクを入力して Enter / Add...">
+          <button class="btn" id="addBtn">ADD</button>
+        </div>
+
+        <div class="hud">
+          <span class="chip">🧊 <span id="count">0</span> tasks</span>
+          <button class="btn btn2 small" id="clearBtn">CLEAR</button>
+        </div>
+      </div>
+
+      <ul class="list" id="list"></ul>
+    </section>
+  </div>
+  <div class="watermark">3D TODO</div>
+
+  <script>
+    const input = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const list = document.getElementById("list");
+    const count = document.getElementById("count");
+    const card = document.getElementById("card");
+
+    const STORAGE_KEY = "hypercube_tasks";
+
+    function save() {
+      const tasks = [...list.children].map(el => ({
+        id: el.dataset.id,
+        text: el.querySelector(".title").textContent,
+        done: el.classList.contains("done"),
+        createdAt: el.dataset.createdAt
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      count.textContent = tasks.length;
+    }
+
+    function load() {
+      try{
+        const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        tasks.forEach(t => addTask(t.text, t.done, t.id, t.createdAt));
+      } catch(e){
+        console.warn(e);
+      } finally{
+        save();
+      }
+    }
+
+    function nanoId(){
+      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+    }
+
+    function fmt(ts){
+      const d = new Date(Number(ts));
+      return d.toLocaleString("ja-JP", {weekday:"short", hour:"2-digit", minute:"2-digit"});
+    }
+
+    function addTask(text, done=false, id=nanoId(), createdAt=Date.now()){
+      const t = text.trim();
+      if(!t) return;
+
+      const li = document.createElement("li");
+      li.className = "task pop" + (done ? " done" : "");
+      li.dataset.id = id;
+      li.dataset.createdAt = createdAt;
+
+      li.innerHTML = `
+        <span class="dot" aria-hidden="true"></span>
+        <p class="title"></p>
+        <button class="iconBtn small" title="Done/Undone" aria-label="完了切替">✓</button>
+        <button class="iconBtn small" title="Delete" aria-label="削除">✕</button>
+        <p class="meta">${fmt(createdAt)}</p>
+        <span class="glow" aria-hidden="true"></span>
+      `;
+      li.querySelector(".title").textContent = t;
+
+      const doneBtn = li.children[2];
+      const delBtn = li.children[3];
+
+      doneBtn.addEventListener("click", () => {
+        li.classList.toggle("done");
+        save();
+      });
+
+      delBtn.addEventListener("click", () => {
+        li.classList.add("bye");
+        // Remove after animation
+        li.addEventListener("animationend", () => {
+          li.remove();
+          save();
+        }, {once:true});
+      });
+
+      li.addEventListener("mousemove", (ev) => {
+        const rect = li.getBoundingClientRect();
+        const x = ev.clientX - rect.left - rect.width/2;
+        const y = ev.clientY - rect.top - rect.height/2;
+        li.style.setProperty("--rx", `${(+y/rect.height*10).toFixed(2)}deg`);
+        li.style.setProperty("--ry", `${(-x/rect.width*10).toFixed(2)}deg`);
+      });
+
+      li.addEventListener("mouseleave", () => {
+        li.style.removeProperty("--rx");
+        li.style.removeProperty("--ry");
+      });
+
+      list.prepend(li);
+      li.addEventListener("animationend", () => li.classList.remove("pop"), {once:true});
+      input.value = "";
+      input.focus();
+      save();
+    }
+
+    addBtn.addEventListener("click", () => addTask(input.value));
+
+    input.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        addTask(input.value);
+      }
+      if(e.key === "Escape"){
+        input.blur();
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      if(confirm("すべてのタスクを消しますか？")){
+        list.innerHTML = "";
+        save();
+      }
+    });
+
+    // Card parallax tilt
+    card.addEventListener("pointermove", (ev) => {
+      const rect = card.getBoundingClientRect();
+      const x = (ev.clientX - rect.left) / rect.width - 0.5;
+      const y = (ev.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `rotateX(${(-y*4).toFixed(2)}deg) rotateY(${(x*4).toFixed(2)}deg) translateZ(0)`;
+    });
+    card.addEventListener("pointerleave", () => {
+      card.style.transform = "";
+    });
+
+    load();
+  </script>
+</body>
+</html>
