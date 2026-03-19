@@ -62,13 +62,13 @@ body::after{
       rgba(0,0,0,0) 2px
     );
   background-size: 100% 4px;
-  opacity:.09;
+  opacity:.16;
   mix-blend-mode: overlay;
   animation: scan 10s linear infinite;
 }
-@keyframes hue {from{filter:hue-rotate(0deg)} to{filter:hue-rotate(16deg)}}
+@keyframes hue {from{filter:hue-rotate(0deg)} to{filter:hue-rotate(42deg)}}
 @keyframes scan{0%{transform: translateY(0)} 100%{transform: translateY(85px)}}
-@keyframes float{0%{transform: translate3d(0,0,0); opacity:.92;} 100%{transform: translate3d(-2%,1%,0); opacity:.96;}}
+@keyframes float{0%{transform: translate3d(0,0,0); opacity:.92;} 100%{transform: translate3d(-16%,12%,0); opacity:.96;}}
 
 @media (prefers-reduced-motion: reduce){
   body{animation:none!important; filter:none!important}
@@ -442,8 +442,8 @@ input[type=text]:focus{
     const y = ((py - rect.top) / rect.height) - 0.5;
 
     if(px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom){
-      root.style.setProperty("--rY", `${x * 6}deg`);
-      root.style.setProperty("--rX", `${-y * 5}deg`);
+      root.style.setProperty("--rY", `${x * 14}deg`);
+      root.style.setProperty("--rX", `${-y * 11}deg`);
     } else {
       root.style.setProperty("--rY", `0deg`);
       root.style.setProperty("--rX", `0deg`);
