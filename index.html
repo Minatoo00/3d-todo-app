@@ -3,432 +3,475 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TODO HyperCube</title>
+  <title>TODO PrismaLab</title>
   <style>
-    :root{
-      --bg1:#0b0b10;
-      --bg2:#180632;
-      --accent1:#57f2ff;
-      --accent2:#ff59d6;
-      --accent3:#ffe86b;
-      --shadow:0 30px 80px rgba(0,0,0,.55);
-      --radius:18px;
-    }
-    *{box-sizing:border-box;}
-    body{
-      min-height:100vh;
-      margin:0;
-      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans Japanese","Noto Sans",sans-serif;
-      color:#e9ebff;
-      background:
-        radial-gradient(1200px 700px at 10% 20%, rgba(255,89,214,.35), transparent 55%),
-        radial-gradient(900px 500px at 90% 30%, rgba(87,242,255,.35), transparent 55%),
-        radial-gradient(900px 500px at 50% 90%, rgba(255,232,107,.25), transparent 55%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      overflow-x:hidden;
-    }
-    .stage{
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      padding:40px 16px 80px;
-      perspective:1200px;
-    }
-    .card{
-      width:min(980px, 96vw);
-      padding:24px;
-      border-radius:calc(var(--radius)*1.2);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      transform-style: preserve-3d;
-      position:relative;
-      overflow:hidden;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:-60px -150px auto -150px;
-      height:220px;
-      transform: rotateZ(-12deg);
-      background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3),var(--accent1));
-      filter: blur(16px) saturate(1.5);
-      opacity:.35;
-      animation: sweep 12s linear infinite;
-    }
-    @keyframes sweep{
-      0%{transform: translateX(-25%) rotateZ(-12deg);}
-      50%{transform: translateX(25%) rotateZ(-12deg);}
-      100%{transform: translateX(-25%) rotateZ(-12deg);}
-    }
-    h1{
-      margin:0;
-      letter-spacing:.06em;
-      font-size: clamp(22px, 3.6vw, 44px);
-      text-shadow: 0 12px 30px rgba(0,0,0,.25);
-    }
-    .sub{
-      margin:10px 0 22px;
-      color: rgba(233,235,255,.72);
-      font-size: 14px;
-    }
-    .chrome{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .inputWrap{
-      flex: 1 1 360px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      transform-style:preserve-3d;
-    }
-    input[type="text"]{
-      flex:1;
-      padding:12px 14px;
-      border-radius:var(--radius);
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(12,10,24,.55);
-      color:#fff;
-      outline:none;
-      font-size:14px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-      transition: transform .2s ease, box-shadow .2s ease, border .2s ease;
-    }
-    input:focus{
-      border-color: rgba(87,242,255,.6);
-      box-shadow: 0 0 0 5px rgba(87,242,255,.12);
-      transform: translateZ(6px);
-    }
-    .btn{
-      border:0;
-      border-radius:var(--radius);
-      padding:12px 14px;
-      font-weight:700;
-      letter-spacing:.02em;
-      cursor:pointer;
-      color:#0b0b10;
-      background: radial-gradient(120px 60px at 30% 20%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%),
-                  linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));
-      box-shadow: 0 15px 60px rgba(0,0,0,.35);
-      transition: transform .15s ease, filter .2s ease, box-shadow .2s ease;
-      user-select:none;
-      transform-style:preserve-3d;
-    }
-    .btn:hover{filter:saturate(1.1) contrast(1.05);}
-    .btn:active{transform: translateZ(6px) scale(.98);}
-    .btn2{
-      background: rgba(255,255,255,.05);
-      color:#e9ebff;
-      border:1px solid rgba(255,255,255,.18);
-    }
-    .hud{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
-    .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.03);
-      font-size:13px;
-      color:rgba(233,235,255,.85);
-      box-shadow: 0 18px 60px rgba(0,0,0,.30);
-    }
-    .list{
-      margin-top:20px;
-      list-style:none;
-      padding:0;
-      display:grid;
-      gap:14px;
-      transform-style: preserve-3d;
-    }
-    .task{
-      display:grid;
-      grid-template-columns: auto 1fr auto auto;
-      gap:12px;
-      align-items:center;
-      padding:14px 14px;
-      border-radius:calc(var(--radius)*1.1);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.15);
-      box-shadow: 0 30px 80px rgba(0,0,0,.35);
-      transform: translateZ(0) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
-      transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .25s ease, border .25s ease, background .25s ease;
-      position:relative;
-      overflow:hidden;
-      transform-style: preserve-3d;
-    }
-    .task::before{
-      content:"";
-      position:absolute;
-      inset:-90px -150px auto -150px;
-      height:200px;
-      transform: rotateZ(-10deg);
-      background: linear-gradient(90deg, rgba(255,232,107,.55), rgba(87,242,255,.45), rgba(255,89,214,.55));
-      filter: blur(18px);
-      opacity:0;
-      transition: opacity .25s ease;
-      pointer-events:none;
-    }
-    .task:hover{
-      transform: translateZ(12px) rotateX(6deg) rotateY(-6deg);
-      border-color: rgba(87,242,255,.35);
-      filter: saturate(1.1);
-    }
-    .task:hover::before{opacity:.45;}
-    .dot{
-      width:12px;
-      height:12px;
-      border-radius:999px;
-      background: radial-gradient(circle at 30% 20%, #fff, var(--accent1) 40%, var(--accent2) 80%);
-      box-shadow: 0 0 0 3px rgba(87,242,255,.15);
-      transform: translateZ(10px);
-    }
-    .title{
-      margin:0;
-      font-weight:800;
-      letter-spacing:.01em;
-      transform-style: preserve-3d;
-    }
-    .meta{
-      grid-column: 2 / -1;
-      font-size:12px;
-      color: rgba(233,235,255,.62);
-      transform-style: preserve-3d;
-    }
-    .task.done{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
-      border-color: rgba(255,255,255,.13);
-      filter: saturate(.95) contrast(.95);
-    }
-    .task.done .title{
-      text-decoration: line-through;
-      opacity:.8;
-    }
-    .task.done .meta{opacity:.65;}
-    .task.done .dot{
-      background: radial-gradient(circle at 30% 20%, #fff, #adffb2 45%, #57f2ff 85%);
-      box-shadow: 0 0 0 3px rgba(173,255,178,.18);
-    }
-    .iconBtn{
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.18);
-      color: #e9ebff;
-      border-radius: 14px;
-      padding:9px 11px;
-      cursor:pointer;
-      transition: transform .15s ease, background .2s ease, border .2s ease, filter .2s ease;
-      transform-style: preserve-3d;
-    }
-    .iconBtn:hover{background: rgba(255,255,255,.06); border-color: rgba(87,242,255,.32); filter:saturate(1.05);}
-    .iconBtn:active{transform: translateZ(6px) scale(.98);}
-    .small{
-      font-size: 13px;
-    }
-    .pop{
-      animation: popIn .55s cubic-bezier(.2,.9,.2,1);
-    }
-    @keyframes popIn{
-      0%{
-        opacity: 0;
-        transform: translateY(18px) rotateX(16deg) rotateY(-12deg) scale(.97);
-        filter: blur(2px);
-      }
-      100%{
-        opacity: 1;
-        transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
-        filter: blur(0);
-      }
-    }
-    .bye{
-      animation: bye .35s cubic-bezier(.6,.1,.6,1) forwards;
-    }
-    @keyframes bye{
-      to{
-        opacity:0;
-        transform: translateY(28px) rotateX(-16deg) rotateY(8deg) scale(.95);
-        filter: blur(5px);
-      }
-    }
-    .glow{
-      position:absolute;
-      inset:-20px;
-      background: radial-gradient(closest-side, rgba(255,255,255,.05), transparent 70%);
-      pointer-events:none;
-      mix-blend-mode: screen;
-      opacity:0;
-      transition: opacity .25s ease;
-    }
-    .task:hover .glow{opacity:1;}
-    .watermark{
-      position: fixed;
-      right: 16px;
-      bottom: 14px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      color: rgba(233,235,255,.22);
-      font-size: 12px;
-      letter-spacing: .1em;
-      user-select:none;
-    }
+:root{
+  --c1:#74f7ff;
+  --c2:#ff48f5;
+  --c3:#ffd166;
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.02);
+  --border: rgba(255,255,255,.12);
+  --shadow: 0 26px 90px rgba(0,0,0,.55);
+  --noise: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="180" height="180" filter="url(%23n)" opacity=".28"/></svg>');
+}
+*{box-sizing:border-box;}
+html,body{height:100%}
+body{
+  margin:0;
+  color:#eaf2ff;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans Japanese, Noto Sans, sans-serif;
+  background:
+    radial-gradient(1000px 760px at 15% 20%, rgba(255,72,245,.25), transparent 55%),
+    radial-gradient(800px 500px at 80% 25%, rgba(116,247,255,.25), transparent 50%),
+    radial-gradient(900px 680px at 40% 85%, rgba(255,209,102,.20), transparent 45%),
+    linear-gradient(135deg, #080711, #131e2c 55%, #10041a);
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:-60px;
+  background:
+    radial-gradient(260px 180px at var(--px,50vw) var(--py,50vh),
+       rgba(255,255,255,.08),
+       rgba(255,72,245,.22),
+       rgba(116,247,255,.18),
+       rgba(0,0,0,0) 65%);
+  filter: blur(22px);
+  pointer-events:none;
+  mix-blend-mode:screen;
+  opacity: .85;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:-2px;
+  background:
+    linear-gradient(rgba(255,255,255,0) 0, rgba(255,255,255,.06) 1px, rgba(0,0,0,0) 2px);
+  background-size: 100% 3px;
+  opacity:.20;
+  pointer-events:none;
+  mix-blend-mode: overlay;
+  animation: scan 16s linear infinite;
+}
+@keyframes scan{from{transform:translateY(0)} to{transform:translateY(140px)}}
+@media (prefers-reduced-motion: reduce){
+  body::before, body::after{animation:none!important}
+}
+
+.wrap{
+  height:100%;
+  display:grid;
+  place-items:center;
+  perspective: 1200px;
+}
+.shell{
+  width:min(1100px, 95vw);
+  padding: 26px 26px 30px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+    radial-gradient(1200px 760px at 0 0, rgba(255,255,255,.18), transparent 55%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: var(--shadow);
+  position:relative;
+  overflow:hidden;
+  transform-style: preserve-3d;
+}
+.shell::before{
+  content:"";
+  position:absolute;
+  inset:-120px;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), transparent 70%);
+  opacity:.65;
+  pointer-events:none;
+  animation: pulse 22s cubic-bezier(.2,.85,.2,1) infinite alternate;
+}
+@keyframes pulse{
+  from{transform: translate3d(-10px, -10px, 0)}
+  to{transform: translate3d(22px, 16px, 0)}
+}
+.topline{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 16px;
+}
+.title{
+  margin:0;
+  font-size: clamp(28px, 5vw, 56px);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  position:relative;
+}
+.title span{
+  display:block;
+  font-size: 14px;
+  letter-spacing:.04em;
+  color: rgba(234,242,255,.72);
+  text-transform:none;
+  margin-top:10px;
+}
+.title::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-10px;
+  width: clamp(250px, 45vw, 560px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  filter: blur(.2px);
+  opacity:.95;
+}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+input[type=text]{
+  width:min(560px, 70vw);
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.35);
+  outline:none;
+  color:#fff;
+  font-size: 14px;
+  transition: border .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+input[type=text]:focus{
+  border-color: rgba(116,247,255,.75);
+  box-shadow: 0 0 0 5px rgba(116,247,255,.12);
+  transform: translateZ(8px);
+}
+
+.btn{
+  border:0;
+  border-radius: 999px;
+  padding: 11px 14px;
+  font-weight: 800;
+  letter-spacing:.02em;
+  cursor:pointer;
+  color:#06101d;
+  background: radial-gradient(120px 60px at 35% 20%, rgba(255,255,255,.9), transparent 60%),
+              linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  box-shadow: 0 18px 70px rgba(0,0,0,.40);
+  transition: transform .15s ease, filter .2s ease, box-shadow .2s ease;
+  user-select:none;
+  transform-style: preserve-3d;
+}
+.btn:hover{filter: saturate(1.1) contrast(1.05)}
+.btn:active{transform: translateZ(8px) scale(.98)}
+
+.btnghost{
+  background: rgba(255,255,255,.05);
+  color:#eaf2ff;
+  border: 1px solid rgba(255,255,255,.18);
+}
+.chip{
+  padding: 9px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.16);
+  color: rgba(234,242,255,.86);
+  font-size: 13px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.list{
+  margin-top: 22px;
+  list-style:none;
+  padding:0;
+  display:grid;
+  gap: 12px;
+  transform-style: preserve-3d;
+}
+.todo{
+  display:grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  align-items:center;
+  padding: 14px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.018));
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 24px 76px rgba(0,0,0,.36);
+  transform: translateZ(0) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .25s ease, border .25s ease, background .25s ease;
+  position:relative;
+  overflow:hidden;
+}
+.todo:hover{
+  transform: translateZ(14px) rotateX(5.5deg) rotateY(-5.5deg);
+  border-color: rgba(116,247,255,.35);
+  filter: saturate(1.07);
+}
+.todo::before{
+  content:"";
+  position:absolute;
+  inset:-100px -200px auto -200px;
+  height: 210px;
+  transform: rotateZ(-12deg);
+  background: linear-gradient(90deg, rgba(116,247,255,.55), rgba(255,72,245,.45), rgba(255,209,102,.55));
+  filter: blur(18px);
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events:none;
+}
+.todo:hover::before{opacity: .45;}
+.dot{
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, #fff, var(--c1) 40%, var(--c2) 80%);
+  box-shadow: 0 0 0 3px rgba(116,247,255,.12);
+  transform: translateZ(10px);
+}
+.todo.done{
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.01));
+  border-color: rgba(255,255,255,.12);
+  filter: saturate(.95) contrast(.96);
+}
+.todo.done .t{
+  text-decoration: line-through;
+  opacity:.85;
+}
+.t{
+  margin:0;
+  font-weight: 900;
+  letter-spacing:.01em;
+}
+.meta{
+  grid-column: 2 / -1;
+  font-size: 12px;
+  color: rgba(234,242,255,.64);
+}
+.icon{
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.16);
+  color:#eaf2ff;
+  border-radius: 14px;
+  padding: 9px 11px;
+  cursor:pointer;
+  transition: transform .15s ease, background .2s ease, border .2s ease, filter .2s ease;
+  transform-style: preserve-3d;
+}
+.icon:hover{background: rgba(255,255,255,.055); border-color: rgba(116,247,255,.28); filter: saturate(1.06)}
+.icon:active{transform: translateZ(6px) scale(.985)}
+.born{animation: born .5s cubic-bezier(.2,.9,.2,1)}
+@keyframes born{
+  from{opacity:0; transform: translateY(16px) rotateX(14deg) rotateY(-12deg) scale(.98)}
+  to{opacity:1; transform: translateY(0) rotateX(0) rotateY(0) scale(1)}
+}
+.bye{animation: bye .32s cubic-bezier(.65,.1,.65,1) forwards}
+@keyframes bye{to{opacity:0; transform: translateY(26px) rotateX(-14deg) rotateY(7deg) scale(.975); filter: blur(4px)}}
+
+.toast{
+  position:fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(0,0,0,.45);
+  color: rgba(234,242,255,.92);
+  font-size: 13px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.40);
+  pointer-events:none;
+  opacity:0;
+}
+.toast.show{animation: toast .65s cubic-bezier(.2,.9,.2,1)}
+@keyframes toast{
+  0%{opacity:0; transform: translateX(-50%) translateY(10px) scale(.98)}
+  40%{opacity:1; transform: translateX(-50%) translateY(0) scale(1)}
+  100%{opacity:0; transform: translateX(-50%) translateY(0) scale(1)}
+}
+.footer{
+  position:fixed;
+  right: 16px;
+  bottom: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: rgba(234,242,255,.22);
+  font-size: 12px;
+  letter-spacing:.12em;
+  user-select:none;
+}
   </style>
 </head>
 <body>
-  <div class="stage">
-    <section class="card" id="card">
-      <h1>TODO HyperCube</h1>
-      <p class="sub">奇抜で3Dっぽい空間で、タスクを浮遊させよう。</p>
-
-      <div class="chrome">
-        <div class="inputWrap">
-          <input id="taskInput" type="text" placeholder="タスクを入力して Enter / Add...">
+  <div class="wrap">
+    <section class="shell" id="shell">
+      <div class="topline">
+        <h1 class="title">TODO PrismaLab<span>賞サイト風に、タスクを「見せる」実験室。</span></h1>
+        <div class="controls">
+          <span class="chip">🧊 <span id="count">0</span> tasks</span>
+          <button class="btn btnghost" id="clearBtn">CLEAR</button>
           <button class="btn" id="addBtn">ADD</button>
         </div>
+      </div>
 
-        <div class="hud">
-          <span class="chip">🧊 <span id="count">0</span> tasks</span>
-          <button class="btn btn2 small" id="clearBtn">CLEAR</button>
-        </div>
+      <div class="controls">
+        <input id="taskInput" type="text" placeholder="タスクを入力して Enter / Add..." autocomplete="off" />
       </div>
 
       <ul class="list" id="list"></ul>
     </section>
   </div>
-  <div class="watermark">3D TODO</div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="footer">PRISM TODO</div>
 
   <script>
-    const input = document.getElementById("taskInput");
-    const addBtn = document.getElementById("addBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const list = document.getElementById("list");
-    const count = document.getElementById("count");
-    const card = document.getElementById("card");
+  const input = document.getElementById("taskInput");
+  const addBtn = document.getElementById("addBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const list = document.getElementById("list");
+  const count = document.getElementById("count");
+  const shell = document.getElementById("shell");
+  const toast = document.getElementById("toast");
+  const STORAGE_KEY = "prism_todos";
 
-    const STORAGE_KEY = "hypercube_tasks";
+  let themeIndex = 0;
+  const palettes = [
+    ["#74f7ff","#ff48f5","#ffd166"],
+    ["#9eff7a","#7cfff5","#b86bff"],
+    ["#ff7c7c","#ffd166","#74f7ff"]
+  ];
 
-    function save() {
-      const tasks = [...list.children].map(el => ({
-        id: el.dataset.id,
-        text: el.querySelector(".title").textContent,
-        done: el.classList.contains("done"),
-        createdAt: el.dataset.createdAt
-      }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      count.textContent = tasks.length;
-    }
+  function setTheme(k){
+    const p = palettes[k % palettes.length];
+    document.documentElement.style.setProperty("--c1", p[0]);
+    document.documentElement.style.setProperty("--c2", p[1]);
+    document.documentElement.style.setProperty("--c3", p[2]);
+  }
+  setTheme(themeIndex);
 
-    function load() {
-      try{
-        const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        tasks.forEach(t => addTask(t.text, t.done, t.id, t.createdAt));
-      } catch(e){
-        console.warn(e);
-      } finally{
+  function nanoId(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
+  function fmt(ts){ return new Date(Number(ts)).toLocaleString("ja-JP", {weekday:"short", hour:"2-digit", minute:"2-digit"}); }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.remove("show");
+    void toast.offsetWidth;
+    toast.classList.add("show");
+  }
+
+  function save(){
+    const tasks = [...list.children].map(li => ({
+      id: li.dataset.id,
+      text: li.querySelector(".t").textContent,
+      done: li.classList.contains("done"),
+      createdAt: li.dataset.createdAt
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    count.textContent = tasks.length;
+  }
+
+  function addTask(text, done=false, id=nanoId(), createdAt=Date.now()){
+    const t = (text || "").trim();
+    if(!t) return;
+    const li = document.createElement("li");
+    li.className = "todo born" + (done ? " done":"");
+    li.dataset.id = id;
+    li.dataset.createdAt = createdAt;
+
+    li.innerHTML = `
+      <span class="dot" aria-hidden="true"></span>
+      <p class="t"></p>
+      <button class="icon" title="Done/Undone" aria-label="完了切替">✓</button>
+      <button class="icon" title="Delete" aria-label="削除">✕</button>
+      <p class="meta">${fmt(createdAt)}</p>
+    `;
+    li.querySelector(".t").textContent = t;
+
+    const doneBtn = li.children[2];
+    const delBtn = li.children[3];
+
+    doneBtn.addEventListener("click", ()=>{
+      li.classList.toggle("done");
+      showToast(li.classList.contains("done") ? "DONE" : "UNDO");
+      save();
+    });
+
+    delBtn.addEventListener("click", ()=>{
+      li.classList.add("bye");
+      li.addEventListener("animationend", ()=>{
+        li.remove();
+        showToast("REMOVED");
         save();
-      }
-    }
+      }, {once:true});
+    });
 
-    function nanoId(){
-      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
-    }
+    li.addEventListener("mousemove", (ev)=>{
+      const rect = li.getBoundingClientRect();
+      const x = ev.clientX - rect.left - rect.width/2;
+      const y = ev.clientY - rect.top - rect.height/2;
+      li.style.setProperty("--rx", `${(+y/rect.height*10).toFixed(2)}deg`);
+      li.style.setProperty("--ry", `${(-x/rect.width*10).toFixed(2)}deg`);
+    });
+    li.addEventListener("mouseleave", ()=>{
+      li.style.removeProperty("--rx");
+      li.style.removeProperty("--ry");
+    });
 
-    function fmt(ts){
-      const d = new Date(Number(ts));
-      return d.toLocaleString("ja-JP", {weekday:"short", hour:"2-digit", minute:"2-digit"});
-    }
+    list.prepend(li);
+    li.addEventListener("animationend", ()=> li.classList.remove("born"), {once:true});
+    input.value="";
+    input.focus();
+    showToast("ADDED");
+    save();
+  }
 
-    function addTask(text, done=false, id=nanoId(), createdAt=Date.now()){
-      const t = text.trim();
-      if(!t) return;
+  function load(){
+    try{
+      const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      tasks.forEach(t => addTask(t.text, t.done, t.id, t.createdAt));
+    }catch(e){ console.warn(e); }
+    finally{ save(); }
+  }
 
-      const li = document.createElement("li");
-      li.className = "task pop" + (done ? " done" : "");
-      li.dataset.id = id;
-      li.dataset.createdAt = createdAt;
+  addBtn.addEventListener("click", ()=> addTask(input.value));
+  input.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") addTask(input.value);
+    if(e.key === "Escape") input.blur();
+  });
 
-      li.innerHTML = `
-        <span class="dot" aria-hidden="true"></span>
-        <p class="title"></p>
-        <button class="iconBtn small" title="Done/Undone" aria-label="完了切替">✓</button>
-        <button class="iconBtn small" title="Delete" aria-label="削除">✕</button>
-        <p class="meta">${fmt(createdAt)}</p>
-        <span class="glow" aria-hidden="true"></span>
-      `;
-      li.querySelector(".title").textContent = t;
-
-      const doneBtn = li.children[2];
-      const delBtn = li.children[3];
-
-      doneBtn.addEventListener("click", () => {
-        li.classList.toggle("done");
-        save();
-      });
-
-      delBtn.addEventListener("click", () => {
-        li.classList.add("bye");
-        // Remove after animation
-        li.addEventListener("animationend", () => {
-          li.remove();
-          save();
-        }, {once:true});
-      });
-
-      li.addEventListener("mousemove", (ev) => {
-        const rect = li.getBoundingClientRect();
-        const x = ev.clientX - rect.left - rect.width/2;
-        const y = ev.clientY - rect.top - rect.height/2;
-        li.style.setProperty("--rx", `${(+y/rect.height*10).toFixed(2)}deg`);
-        li.style.setProperty("--ry", `${(-x/rect.width*10).toFixed(2)}deg`);
-      });
-
-      li.addEventListener("mouseleave", () => {
-        li.style.removeProperty("--rx");
-        li.style.removeProperty("--ry");
-      });
-
-      list.prepend(li);
-      li.addEventListener("animationend", () => li.classList.remove("pop"), {once:true});
-      input.value = "";
-      input.focus();
+  clearBtn.addEventListener("click", ()=>{
+    if(confirm("すべてのタスクを消しますか？")){
+      list.innerHTML="";
+      showToast("CLEARED");
       save();
     }
+  });
 
-    addBtn.addEventListener("click", () => addTask(input.value));
+  // stage tilt + pointer light
+  shell.addEventListener("pointermove", (ev)=>{
+    const rect = shell.getBoundingClientRect();
+    const x = (ev.clientX - rect.left)/rect.width - .5;
+    const y = (ev.clientY - rect.top)/rect.height - .5;
+    shell.style.transform = `rotateX(${(-y*4.2).toFixed(2)}deg) rotateY(${(x*4.2).toFixed(2)}deg)`;
+    document.documentElement.style.setProperty("--px", `${ev.clientX}px`);
+    document.documentElement.style.setProperty("--py", `${ev.clientY}px`);
+  });
+  shell.addEventListener("pointerleave", ()=>{
+    shell.style.transform = "";
+  });
 
-    input.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
-        addTask(input.value);
-      }
-      if(e.key === "Escape"){
-        input.blur();
-      }
-    });
+  document.addEventListener("keydown", (e)=>{
+    if((e.key || "").toLowerCase() === "h"){
+      themeIndex = (themeIndex + 1) % palettes.length;
+      setTheme(themeIndex);
+      showToast(`THEME ${themeIndex+1}`);
+    }
+  });
 
-    clearBtn.addEventListener("click", () => {
-      if(confirm("すべてのタスクを消しますか？")){
-        list.innerHTML = "";
-        save();
-      }
-    });
-
-    // Card parallax tilt
-    card.addEventListener("pointermove", (ev) => {
-      const rect = card.getBoundingClientRect();
-      const x = (ev.clientX - rect.left) / rect.width - 0.5;
-      const y = (ev.clientY - rect.top) / rect.height - 0.5;
-      card.style.transform = `rotateX(${(-y*4).toFixed(2)}deg) rotateY(${(x*4).toFixed(2)}deg) translateZ(0)`;
-    });
-    card.addEventListener("pointerleave", () => {
-      card.style.transform = "";
-    });
-
-    load();
-  document.head.appendChild(Object.assign(document.createElement('style'),{textContent:':root{--pointer-x:50vw;--pointer-y:50vh;--scanOpacity:.25;}body{position:relative;animation:hueShift 18s linear infinite alternate;}body::after{content:"";position:fixed;inset:-2px;background:linear-gradient(rgba(255,255,255,0) 0,rgba(255,255,255,.04) 1px,rgba(0,0,0,0) 2px);background-size:100% 4px;mix-blend-mode:screen;opacity:var(--scanOpacity);pointer-events:none;animation:scan 14s linear infinite;}body::before{content:"";position:fixed;inset:-60px;background:radial-gradient(220px 160px at var(--pointer-x) var(--pointer-y),rgba(255,255,255,.06),rgba(255,89,214,.25),rgba(87,242,255,.12),transparent 70%);filter:blur(28px);mix-blend-mode:screen;pointer-events:none;opacity:.85;}@keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(120px)}}@keyframes hueShift{0%{filter:hue-rotate(0deg) saturate(1.05)}100%{filter:hue-rotate(35deg) saturate(1.05)}}.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(12,10,24,.65);color:rgba(233,235,255,.92);font-size:13px;box-shadow:0 18px 60px rgba(0,0,0,.35);opacity:0;pointer-events:none;}.toast.show{animation:toastIn .65s cubic-bezier(.2,.9,.2,1)}@keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}40%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(0) scale(1)}}@media (prefers-reduced-motion: reduce){body{animation:none!important;filter:none!important}body::after,body::before{animation:none!important;opacity:.08!important;filter:none!important}}'}));var toast=document.getElementById('toast')||(function(){var d=document.createElement('div');d.id='toast';d.className='toast';d.setAttribute('aria-live','polite');document.body.appendChild(d);return d;})();var root=document.documentElement;function showToast(m){toast.textContent=m;toast.classList.remove('show');void toast.offsetWidth;toast.classList.add('show');}var palettes=[['#57f2ff','#ff59d6','#ffe86b','#0b0b10','#180632'],['#7bff57','#57fff2','#b657ff','#050810','#0e213c'],['#ff6b6b','#ffe86b','#57f2ff','#08060f','#1a0526']];function applyPalette(p){root.style.setProperty('--accent1',p[0]);root.style.setProperty('--accent2',p[1]);root.style.setProperty('--accent3',p[2]);root.style.setProperty('--bg1',p[3]);root.style.setProperty('--bg2',p[4]);}var themeIndex=0;applyPalette(palettes[themeIndex]);document.addEventListener('pointermove',function(e){root.style.setProperty('--pointer-x',e.clientX+'px');root.style.setProperty('--pointer-y',e.clientY+'px');});document.addEventListener('keydown',function(e){if((e.key||'').toLowerCase()==='h'){themeIndex=(themeIndex+1)%palettes.length;applyPalette(palettes[themeIndex]);showToast('HYPER THEME '+(themeIndex+1));}});var listToast=document.getElementById('list')||document.querySelector('ul');if(listToast){var prev=new WeakMap();listToast.querySelectorAll('li').forEach(function(li){prev.set(li,li.className||'');});var obs=new MutationObserver(function(ms){var add=false,rem=false,chg=null;ms.forEach(function(m){if(m.type==='childList'){if(m.addedNodes.length)add=true;if(m.removedNodes.length)rem=true;}if(m.type==='attributes'){var li=m.target;var before=prev.get(li)||'';var after=li.className||'';if(before!==after){prev.set(li,after);chg=after.indexOf('done')>-1?'done':'undo';}}});if(add)showToast('ADDED');if(rem)showToast('REMOVED');if(chg)showToast(chg==='done'?'DONE!':'UNDO');});obs.observe(listToast,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}</script>
+  load();
+  </script>
 </body>
 </html>
