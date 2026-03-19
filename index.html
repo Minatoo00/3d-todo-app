@@ -17,23 +17,63 @@
   --accent:#00d26a;
   --a2:#7359ff;
   --a3:#00b3ff;
+  --mx: 50vw;
+  --my: 50vh;
+  --rX: 0deg;
+  --rY: 0deg;
 }
 *{box-sizing:border-box;}
 html,body{height:100%}
 body{
   margin:0;
   background:
-    radial-gradient(600px 420px at 12% 12%, rgba(0,210,106,.24), transparent 55%),
-    radial-gradient(620px 460px at 88% 20%, rgba(115,89,255,.18), transparent 60%),
-    radial-gradient(760px 520px at 40% 100%, rgba(0,179,255,.16), transparent 55%),
+    radial-gradient(680px 460px at 12% 12%, rgba(0,210,106,.26), transparent 55%),
+    radial-gradient(740px 520px at 88% 18%, rgba(115,89,255,.20), transparent 60%),
+    radial-gradient(840px 580px at 48% 98%, rgba(0,179,255,.16), transparent 56%),
     linear-gradient(180deg, #ffffff 0%, #f7f5ff 100%);
   color: var(--fg);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans Japanese, Noto Sans, sans-serif;
   overflow-x:hidden;
   animation: hue 18s linear infinite alternate;
 }
+body::before{
+  content:"";
+  position: fixed;
+  inset: -220px;
+  pointer-events:none;
+  opacity:.95;
+  filter: blur(26px);
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(560px 420px at calc(var(--mx) - 20%) calc(var(--my) - 15%), rgba(115,89,255,.26), transparent 62%),
+    radial-gradient(620px 460px at calc(var(--mx) + 14%) calc(var(--my) + 22%), rgba(0,179,255,.22), transparent 65%),
+    radial-gradient(720px 520px at calc(var(--mx)) calc(var(--my)), rgba(0,210,106,.20), transparent 63%);
+  animation: float 22s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";
+  position: fixed;
+  inset:-2px;
+  pointer-events:none;
+  background:
+    linear-gradient(
+      rgba(255,255,255,0) 0,
+      rgba(255,255,255,.05) 1px,
+      rgba(0,0,0,0) 2px
+    );
+  background-size: 100% 4px;
+  opacity:.09;
+  mix-blend-mode: overlay;
+  animation: scan 10s linear infinite;
+}
 @keyframes hue {from{filter:hue-rotate(0deg)} to{filter:hue-rotate(16deg)}}
-@media (prefers-reduced-motion: reduce){ body{animation:none!important; filter:none!important} }
+@keyframes scan{0%{transform: translateY(0)} 100%{transform: translateY(85px)}}
+@keyframes float{0%{transform: translate3d(0,0,0); opacity:.92;} 100%{transform: translate3d(-2%,1%,0); opacity:.96;}}
+
+@media (prefers-reduced-motion: reduce){
+  body{animation:none!important; filter:none!important}
+  body::before,body::after{animation:none!important; opacity:.06!important; filter:none!important}
+}
 
 .wrap{
   min-height:100%;
@@ -85,6 +125,9 @@ body{
   border: 1px solid rgba(12,10,26,.08);
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rX)) rotateY(var(--rY));
+  transition: transform .12s ease;
 }
 
 .inputrow{
@@ -109,6 +152,7 @@ input[type=text]:focus{
   border-color: rgba(0,210,106,.65);
   box-shadow: 0 0 0 6px rgba(0,210,106,.10);
 }
+
 .btn{
   border:0;
   border-radius: 999px;
@@ -149,10 +193,29 @@ input[type=text]:focus{
   box-shadow: 0 16px 46px rgba(12,10,26,.08);
   position:relative;
   overflow:hidden;
+  transform: translateZ(0);
   animation: pop .45s cubic-bezier(.2,.9,.2,1);
 }
 .todo:hover{ border-color: rgba(0,210,106,.18); }
+
 @keyframes pop{from{opacity:0; transform: translateY(12px)} to{opacity:1; transform: translateY(0)}}
+
+.todo.flash::before{
+  content:"";
+  position:absolute;
+  left:-130%;
+  top:0;
+  width:260%;
+  height:100%;
+  background: linear-gradient(90deg, transparent, rgba(0,210,106,.20), transparent);
+  transform: skewX(-18deg);
+  pointer-events:none;
+  animation: shimmer .55s ease;
+}
+@keyframes shimmer{0%{transform: translateX(0) skewX(-18deg); opacity:.45;} 100%{transform: translateX(120%) skewX(-18deg); opacity:0;}}
+
+.todo.bye{ animation: bye .22s ease forwards; }
+@keyframes bye{to{opacity:0; transform: translateY(7px) scale(.98);}}
 
 .dot{
   width: 10px;
@@ -194,6 +257,28 @@ input[type=text]:focus{
 }
 .toast.show{ animation: toast .6s cubic-bezier(.2,.9,.2,1); }
 @keyframes toast{0%{opacity:0; transform: translateX(-50%) translateY(10px)} 40%{opacity:1; transform: translateX(-50%) translateY(0)} 100%{opacity:0; transform: translateX(-50%) translateY(0)}}
+
+.cursor{
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(12,10,26,.42);
+  border-radius: 999px;
+  transform: translate3d(-50%,-50%,0);
+  pointer-events:none;
+  z-index: 9999;
+  mix-blend-mode: multiply;
+  transition: transform .12s ease;
+}
+.cursor::after{
+  content:"";
+  position:absolute;
+  inset:-12px;
+  border: 1px solid rgba(0,210,106,.22);
+  border-radius:999px;
+  opacity:.55;
+}
+.cursor.active{ transform: translate3d(-50%,-50%,0) scale(.88); }
 
 .footer{
   margin-top: 20px;
@@ -238,7 +323,14 @@ input[type=text]:focus{
   const list = document.getElementById("list");
   const count = document.getElementById("count");
   const toast = document.getElementById("toast");
+  const stage = document.querySelector(".stage");
+  const root = document.documentElement;
   const STORAGE_KEY = "editions_todos";
+
+  // Cursor
+  const cursor = document.createElement("div");
+  cursor.className = "cursor";
+  document.body.appendChild(cursor);
 
   function nanoId(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
   function fmt(ts){
@@ -286,14 +378,19 @@ input[type=text]:focus{
 
     doneBtn.addEventListener("click", () => {
       li.classList.toggle("done");
+      li.classList.add("flash");
+      setTimeout(() => li.classList.remove("flash"), 600);
       showToast(li.classList.contains("done") ? "DONE" : "UNDO");
       save();
     });
 
     delBtn.addEventListener("click", () => {
-      li.remove();
+      li.classList.add("bye");
       showToast("REMOVED");
-      save();
+      setTimeout(() => {
+        li.remove();
+        save();
+      }, 220);
     });
 
     list.prepend(li);
@@ -324,6 +421,37 @@ input[type=text]:focus{
       save();
     }
   });
+
+  // pointer-based tilt and background
+  let px = window.innerWidth / 2;
+  let py = window.innerHeight / 2;
+
+  document.addEventListener("pointermove", (e)=>{
+    px = e.clientX;
+    py = e.clientY;
+
+    cursor.style.left = px + "px";
+    cursor.style.top = py + "px";
+
+    root.style.setProperty("--mx", px + "px");
+    root.style.setProperty("--my", py + "px");
+
+    if(!stage) return;
+    const rect = stage.getBoundingClientRect();
+    const x = ((px - rect.left) / rect.width) - 0.5;
+    const y = ((py - rect.top) / rect.height) - 0.5;
+
+    if(px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom){
+      root.style.setProperty("--rY", `${x * 6}deg`);
+      root.style.setProperty("--rX", `${-y * 5}deg`);
+    } else {
+      root.style.setProperty("--rY", `0deg`);
+      root.style.setProperty("--rX", `0deg`);
+    }
+  });
+
+  document.addEventListener("pointerdown", ()=> cursor.classList.add("active"));
+  document.addEventListener("pointerup", ()=> cursor.classList.remove("active"));
 
   load();
   </script>
