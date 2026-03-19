@@ -1,600 +1,459 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TODO Fusion</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TODO Carousel</title>
   <style>
     :root{
-      --bg1:#060810;
-      --bg2:#0c1026;
-      --glass: rgba(255,255,255,.07);
-      --stroke: rgba(255,255,255,.14);
-      --text: rgba(240,242,255,.92);
-      --muted: rgba(219,222,245,.60);
-      --accent1:#78e6ff;
-      --accent2:#ff6bd6;
-      --accent3:#ffc86b;
-      --cursor:#ffffff;
+      --bg1:#070812;
+      --bg2:#0e1230;
+      --accent:#6cf1ff;
+      --accent2:#ff70e7;
+      --card:#ffffff0f;
+      --stroke:#ffffff26;
+      --txt:#eef0ff;
+      --muted:#b9bfd8;
+      --noise:.07;
     }
 
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
     body{
       margin:0;
-      min-height:100vh;
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji";
-      overflow-x:hidden;
-      background:
-        radial-gradient(1100px 700px at 20% 10%, rgba(120,230,255,.16), transparent 60%),
-        radial-gradient(900px 700px at 80% 40%, rgba(255,107,214,.14), transparent 60%),
-        radial-gradient(900px 700px at 50% 100%, rgba(255,200,107,.10), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
+      color:var(--txt);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow:hidden;
+      background: radial-gradient(1100px 800px at 15% 10%, rgba(108,241,255,.22), transparent 65%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(255,112,231,.18), transparent 65%),
+                  radial-gradient(800px 800px at 45% 75%, rgba(255,224,120,.12), transparent 55%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      position:relative;
     }
-
-    #bg{
+    body::before{
+      content:"";
       position:fixed;
-      inset:0;
-      z-index:0;
-      filter: blur(24px) saturate(1.15);
-      opacity:.75;
+      inset:-40px;
+      background:conic-gradient(from 90deg,
+        rgba(255,255,255,.15),
+        rgba(108,241,255,.18),
+        rgba(255,112,231,.22),
+        rgba(255,224,120,.1),
+        rgba(255,255,255,.15)
+      );
+      filter: blur(30px);
+      opacity:.7;
+      animation: hue 18s linear infinite;
       pointer-events:none;
     }
-    .noise{
-      pointer-events:none;
+    body::after{
+      content:"";
       position:fixed;
       inset:-2px;
-      z-index:2;
-      mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-      background-size: 240px 240px;
-      opacity:.20;
-    }
-
-    .cursor{
-      position:fixed;
-      z-index:100;
-      width:32px;height:32px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.45);
-      transform: translate(-50%,-50%);
-      pointer-events:none;
-      box-shadow: 0 0 0 10px rgba(255,255,255,.02);
+      background:
+        linear-gradient(rgba(255,255,255,0) 0, rgba(255,255,255,.08) 1px, rgba(0,0,0,0) 4px);
+      background-size: 100% 6px;
       mix-blend-mode: screen;
-      transition: width .18s ease, height .18s ease;
+      opacity:var(--noise);
+      animation: scan 14s linear infinite;
+      pointer-events:none;
     }
 
-    .shell{
-      position:relative;
-      z-index:3;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 34px 18px 80px;
-      transform: translate3d(0,0,0);
-    }
-
-    .top{
+    .ui{
+      position:absolute;
+      inset:0;
       display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-    }
-    .title{
-      font-size: clamp(30px, 4vw, 56px);
-      line-height:1.05;
-      margin:0;
-      font-weight: 800;
-      letter-spacing: -.02em;
-      text-shadow: 0 22px 60px rgba(0,0,0,.4);
-    }
-    .subtitle{margin:8px 0 0;font-size:15px;color:var(--muted)}
-
-    .panel{
-      display:grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 16px;
-      align-items:start;
+      flex-direction:column;
+      padding:22px;
+      pointer-events:none;
     }
 
-    .glass{
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: 20px;
-      box-shadow:
-        0 38px 120px rgba(0,0,0,.35),
-        inset 0 1px 0 rgba(255,255,255,.16);
-      overflow:hidden;
-      position:relative;
-    }
-
-    .controls{
-      padding: 16px;
+    .bar{
       display:flex;
-      flex-direction: column;
-      gap: 12px;
+      align-items:center;
+      gap:14px;
+      pointer-events:auto;
     }
-    .row{display:flex; gap:10px; align-items:center}
-    .row input{
+    .brand{
+      font-weight:900;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      font-size:14px;
+      opacity:.85;
+    }
+    .wrap{
+      display:flex;
+      gap:10px;
       flex:1;
-      padding: 10px 12px;
-      background: rgba(10,12,20,.35);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px;
+    }
+
+    input{color:var(--txt);}
+    .input{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
       outline:none;
-      color: var(--text);
-      font-size: 14px;
+      width:240px;
     }
-
     .btn{
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
       cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      user-select:none;
-      font-size: 14px;
-      font-weight:700;
-      letter-spacing:.01em;
+      border:none;
+      padding:10px 12px;
+      border-radius:12px;
+      color:var(--bg1);
+      background: linear-gradient(135deg, rgba(108,241,255,.95), rgba(255,112,231,.9));
+      box-shadow: 0 18px 50px rgba(255,112,231,.15);
+      font-weight:800;
     }
-    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.26)}
+    .btn.ghost{
+      background:rgba(255,255,255,.05);
+      color:var(--txt);
+      border:1px solid var(--stroke);
+    }
 
-    .grid{
-      padding: 16px;
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+    .hud{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      pointer-events:auto;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.25);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .scene{
+      height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+
+    .stage{
+      pointer-events:auto;
+      width:min(92vw, 1100px);
+      height:min(78vh, 640px);
+      perspective: 1400px;
+      position:relative;
+    }
+    .ring{
+      position:absolute;
+      inset:0;
+      transform-style: preserve-3d;
+      transform: translateZ(calc(var(--radius, 400px)*-1));
+      will-change: transform;
+      transition: filter .35s ease;
     }
 
     .card{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform-style: preserve-3d;
+      transform-origin:center center;
+      width: 260px;
       height: 180px;
       border-radius: 16px;
-      position:relative;
-      background: rgba(12,14,26,.45);
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: 0 26px 80px rgba(0,0,0,.24);
+      border:1px solid rgba(255,255,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.12));
+      box-shadow: 0 25px 90px rgba(0,0,0,.45);
       overflow:hidden;
-      transform-style: preserve-3d;
-      transform: translate3d(0,0,0);
+      cursor:pointer;
+      opacity: .92;
     }
+
     .card::before{
       content:"";
       position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(500px 240px at var(--mx, 60%) var(--my, 60%), rgba(120,230,255,.24), transparent 60%),
-        radial-gradient(500px 240px at 20% 20%, rgba(255,107,214,.12), transparent 55%);
+      inset:-30%;
+      background: radial-gradient(closest-side,
+        rgba(108,241,255,.12),
+        rgba(255,112,231,.08),
+        transparent 62%
+      );
       filter: blur(18px);
-      transform: translateZ(-1px);
-      opacity:.65;
+      animation: drift 9s ease-in-out infinite;
+      opacity:.9;
     }
 
-    .card img{
+    .cardInner{
       position:absolute;
       inset:0;
-      width:100%; height:100%;
-      object-fit: cover;
-      transform: translateZ(-1px) scale(1.06);
-      filter: brightness(.84);
-      opacity:.95;
-    }
-
-    .card .info{
-      position:absolute;
-      inset:auto 0 0 0;
-      padding: 12px 12px 14px;
-      background: linear-gradient(180deg, rgba(10,12,20,0), rgba(10,12,20,.86));
-      border-top: 1px solid rgba(255,255,255,.12);
-      z-index:1;
-    }
-
-    .meta{
+      padding:16px;
       display:flex;
+      flex-direction:column;
       justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      margin-bottom: 6px;
-      color: rgba(255,255,255,.72);
-      font-size: 12px;
+      backdrop-filter: blur(10px);
     }
+    .title{font-weight:900; font-size:18px; line-height:1.12;}
+    .desc{font-size:12px; color:var(--muted); opacity:.9;}
+    .meta{display:flex; justify-content:space-between; align-items:center; gap:10px; color:var(--muted); font-size:12px;}
 
-    .card h3{margin:0; font-size: 15px; letter-spacing:.01em}
-    .card p{margin: 6px 0 0; font-size: 13px; color: rgba(222,225,245,.75); line-height:1.35}
-
-    .pill{display:inline-flex; gap:8px; align-items:center}
-    .pill b{color: var(--text); font-weight:800}
-
-    .pill span{
-      display:inline-block;
-      width:8px;height:8px;border-radius:999px;
-      background: rgba(120,230,255,.95);
-      box-shadow: 0 0 0 6px rgba(120,230,255,.10);
-    }
-    .card.done .pill span{background: rgba(255,107,214,.95); box-shadow: 0 0 0 6px rgba(255,107,214,.10)}
+    .card.done{ border-color: rgba(255,224,120,.9); }
+    .card.done .title{color:rgba(255,224,120,.92);}
 
     .toast{
       position:fixed;
-      left: 50%;
-      bottom: 16px;
+      left:50%;
+      bottom:18px;
       transform: translateX(-50%);
-      padding: 10px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.22);
-      backdrop-filter: blur(10px);
-      z-index:200;
+      border:1px solid rgba(255,255,255,.22);
+      background: rgba(0,0,0,.35);
+      color: rgba(236,238,255,.95);
+      font-size: 13px;
+      pointer-events:none;
       opacity:0;
-      pointer-events:none;
-    }
-    .toast.show{animation: toast 1s ease both}
-
-    @keyframes toast{
-      0%{opacity:0; transform: translateX(-50%) translateY(10px)}
-      25%{opacity:1; transform: translateX(-50%) translateY(0)}
-      75%{opacity:1}
-      100%{opacity:0}
+      animation: toast 1s ease both;
+      display:none;
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
     }
 
-    .modal{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      z-index:300;
-      opacity:0;
-      pointer-events:none;
-      display:grid;
-      place-items:center;
-    }
-    .modal.show{opacity:1; pointer-events:auto}
-    .modal .box{
-      width:min(840px, calc(100vw - 28px));
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(12,14,26,.90), rgba(12,14,26,.70));
-      border: 1px solid rgba(255,255,255,.18);
-      overflow:hidden;
-      box-shadow: 0 38px 140px rgba(0,0,0,.55);
-    }
-
-    .modal .hero{
-      height: 230px;
-      position:relative;
-      overflow:hidden;
-    }
-    .modal .hero img{
-      position:absolute;
-      inset:0;
-      width:100%;height:100%;
-      object-fit: cover;
-      filter: brightness(.9);
-    }
-    .modal .hero::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(600px 220px at 20% 10%, rgba(120,230,255,.25), transparent 60%),
-        radial-gradient(640px 240px at 80% 70%, rgba(255,107,214,.25), transparent 60%),
-        linear-gradient(180deg, rgba(10,12,20,.0), rgba(10,12,20,.95));
-      pointer-events:none;
-    }
-
-    .modal .content{padding: 16px; display:grid; gap:12px}
-    .modal h2{margin:0; font-size: 22px}
-    .modal p{margin:0; color: rgba(222,225,245,.82)}
-
-    .modal .footer{display:flex; justify-content:space-between; gap:10px; align-items:center}
-
-    @media (max-width: 920px){
-      .panel{grid-template-columns:1fr}
-      .grid{grid-template-columns:1fr}
-      .card{height: 200px}
-    }
+    @keyframes drift{0%{transform: translate3d(0,0,0) rotate(0deg);} 50%{transform: translate3d(18px,-20px,0) rotate(15deg);} 100%{transform: translate3d(-20px,12px,0) rotate(-8deg);} }
+    @keyframes hue{from{filter:hue-rotate(0deg);} to{filter:hue-rotate(360deg);} }
+    @keyframes scan{from{transform: translateY(0);} to{transform: translateY(140px);} }
+    @keyframes toast{0%{opacity:0; transform: translateX(-50%) translateY(10px);} 15%{opacity:1; transform: translateX(-50%) translateY(0);} 85%{opacity:1;} 100%{opacity:0; transform: translateX(-50%) translateY(-6px);} }
 
     @media (prefers-reduced-motion: reduce){
-      .cursor, .noise{display:none}
-      #bg{filter: none; opacity:.3}
-      .glass{transition:none}
+      body::before, body::after{animation:none!important; filter:none!important; opacity:.18!important;}
+      .card::before{animation:none!important;}
     }
   </style>
 </head>
 <body>
-  <canvas id="bg"></canvas>
-  <div class="noise"></div>
-  <div class="cursor" id="cursor"></div>
-
-  <div class="shell" id="shell">
-    <div class="top">
-      <div>
-        <h1 class="title">TODO Fusion</h1>
-        <p class="subtitle">奇抜さは正義。タスクを宇宙に放り込め。</p>
-      </div>
-      <button class="btn" id="themeBtn" aria-label="theme">Theme</button>
+  <div class="ui">
+    <div class="bar">
+      <div class="brand">TODO Carousel</div>
+      <input id="title" class="input" placeholder="タスク (例: ギャラリー回転を直す)">
+      <input id="desc" class="input" placeholder="説明 (オプション)">
+      <button class="btn" id="add">ADD</button>
+      <button class="btn ghost" id="auto">AUTO</button>
+      <button class="btn ghost" id="shuffle">SHUFFLE</button>
+      <button class="btn ghost" id="reset">RESET</button>
+      <button class="btn ghost" id="theme">THEME</button>
     </div>
+    <div class="hud">
+      <div class="pill" id="count">Tasks: 0</div>
+      <div class="pill">左クリック: DONE / UNDO</div>
+      <div class="pill">右クリック: DELETE</div>
+      <div class="pill">ドラッグ: 回転</div>
+      <div class="pill">H: Auto toggle</div>
+    </div>
+  </div>
 
-    <div class="panel">
-      <section class="glass">
-        <div class="controls">
-          <div class="row">
-            <input id="titleInput" placeholder="タイトル" maxlength="80" />
-          </div>
-          <div class="row">
-            <input id="descInput" placeholder="説明 (任意)" maxlength="200" />
-          </div>
-          <div class="row">
-            <button class="btn" id="addBtn">ADD</button>
-            <button class="btn" id="loadDefault">Load</button>
-            <button class="btn" id="addDemo">Demo</button>
-            <button class="btn" id="resetBtn">Reset</button>
-          </div>
-          <p class="subtitle" id="status">Tasks: 0</p>
-        </div>
-      </section>
-
-      <section class="glass">
-        <div class="grid" id="grid"></div>
-      </section>
+  <div class="scene">
+    <div class="stage" id="stage">
+      <div class="ring" id="ring"></div>
     </div>
   </div>
 
   <div class="toast" id="toast" aria-live="polite"></div>
 
-  <div class="modal" id="modal">
-    <div class="box">
-      <div class="hero">
-        <img id="modalImg" alt="" />
-      </div>
-      <div class="content">
-        <div class="footer">
-          <div>
-            <div class="pill">
-              <span></span>
-              <b id="modalState">OPEN</b>
-            </div>
-          </div>
-          <button class="btn" id="modalClose">Close</button>
-        </div>
-        <div>
-          <h2 id="modalTitle"></h2>
-          <p id="modalDesc"></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script>
-    const artData = [
-      {title:'Nebula Surge', desc:'粒子と光と意味不明な未来。', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60'},
-      {title:'Glass Drift', desc:'ミニマルガラスが空間を彷徨う。', img:'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=60'},
-      {title:'Laser Bloom', desc:'ビームが咲く。奇妙に。', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=60'},
-      {title:'Starfield TODO', desc:'タスクを銀河に投げる。', img:'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=60'},
-      {title:'Flux Memory', desc:'透明な記憶が溶ける。', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=60'}
+  (function(){
+    function $(id){return document.getElementById(id);} 
+    const store='todo_carousel_v1';
+    let tasks=[];
+
+    // motion state
+    let rotation=0;
+    let target=0;
+    let vel=0;
+    let dragging=false;
+    let lastX=0;
+    let auto=true;
+
+    // theme
+    const themes=[
+      ['#6cf1ff','#ff70e7'],
+      ['#ffbf6b','#6df2b3'],
+      ['#c76bff','#6bc3ff'],
     ];
+    let themeIndex=0;
 
-    const el = id => document.getElementById(id);
-    const cursor = el('cursor');
-    const toastEl = el('toast');
-    const modal = el('modal');
-
-    const titleInput = el('titleInput');
-    const descInput = el('descInput');
-
-    const palette = [
-      ['#78e6ff','#ff6bd6','#ffc86b'],
-      ['#9cff6b','#78e6ff','#7c63ff'],
-      ['#ff6b7a','#ffe86b','#78e6ff']
-    ];
-
-    let theme = 0;
-    function applyTheme(){
-      const p = palette[theme % palette.length];
-      document.documentElement.style.setProperty('--accent1', p[0]);
-      document.documentElement.style.setProperty('--accent2', p[1]);
-      document.documentElement.style.setProperty('--accent3', p[2]);
-    }
+    const titleInput=$('title');
+    const descInput=$('desc');
+    const ring=$('ring');
+    const stage=$('stage');
+    const toastEl=$('toast');
+    const countEl=$('count');
 
     function toast(msg){
-      toastEl.textContent = msg;
-      toastEl.classList.remove('show');
+      toastEl.textContent=msg;
+      toastEl.style.display='block';
+      toastEl.style.animation='none';
       void toastEl.offsetWidth;
-      toastEl.classList.add('show');
+      toastEl.style.animation='toast 1s ease both';
     }
 
-    function randomId(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-
+    function save(){
+      localStorage.setItem(store, JSON.stringify(tasks));
+    }
     function load(){
-      const raw = localStorage.getItem('fusion_todos');
-      if(!raw) return [];
-      try{return JSON.parse(raw);}catch(e){return [];}
+      try{tasks=JSON.parse(localStorage.getItem(store)||'[]')||[];}catch(_){tasks=[];}
     }
 
-    function save(tasks){
-      localStorage.setItem('fusion_todos', JSON.stringify(tasks));
+    function clamp(n,a,b){return Math.max(a, Math.min(b,n));}
+    function randInt(max){return Math.floor(Math.random()*max);}
+
+    function applyTheme(){
+      const t=themes[themeIndex];
+      document.documentElement.style.setProperty('--accent', t[0]);
+      document.documentElement.style.setProperty('--accent2', t[1]);
     }
 
-    function storeTheme(){ localStorage.setItem('fusion_theme', String(theme)); }
-    function loadTheme(){ const raw = localStorage.getItem('fusion_theme'); if(raw) theme = parseInt(raw) || 0; }
+    function render(){
+      countEl.textContent='Tasks: '+tasks.length;
+      ring.innerHTML='';
 
-    function tiltCard(card, e){
-      const r = card.getBoundingClientRect();
-      const mx = (e.clientX - r.left) / r.width;
-      const my = (e.clientY - r.top) / r.height;
-      const ry = (mx - .5) * 16;
-      const rx = (my - .5) * -16;
-      card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-      card.style.setProperty('--mx', `${mx*100}%`);
-      card.style.setProperty('--my', `${my*100}%`);
-    }
+      const n=tasks.length || 1;
+      const rect=stage.getBoundingClientRect();
+      const radius=clamp(Math.floor(Math.min(rect.width, rect.height)*0.75), 280, 800);
+      ring.style.setProperty('--radius', radius+'px');
+      const step=360/n;
 
-    function resetTilt(card){
-      card.style.transform = 'rotateX(0deg) rotateY(0deg)';
-    }
+      tasks.forEach((t,i)=>{
+        const card=document.createElement('div');
+        card.className='card'+(t.done?' done':'');
+        card.dataset.id=t.id;
+        const deg=step*i;
+        card.style.transform='translate(-50%, -50%) rotateY('+deg+'deg) translateZ('+radius+'px)';
+        card.innerHTML=
+          '<div class="cardInner">'+
+            '<div class="title">'+escapeHtml(t.title||'TASK')+'</div>'+ 
+            '<div class="desc">'+escapeHtml(t.desc||'')+'</div>'+ 
+            '<div class="meta"><span>'+ (t.done?'DONE':'OPEN')+'</span><span>'+new Date(t.time||Date.now()).toLocaleTimeString()+'</span></div>'+ 
+          '</div>';
 
-    function showModal(task){
-      el('modalImg').src = task.img;
-      el('modalTitle').textContent = task.title;
-      el('modalDesc').textContent = task.desc || '説明なし';
-      el('modalState').textContent = task.done ? 'DONE' : 'OPEN';
-      modal.classList.add('show');
-    }
-
-    function closeModal(){ modal.classList.remove('show'); }
-
-    function render(tasks){
-      const grid = el('grid');
-      grid.innerHTML = '';
-      el('status').textContent = `Tasks: ${tasks.length}`;
-
-      tasks.forEach(task => {
-        const card = document.createElement('div');
-        card.className = 'card' + (task.done ? ' done' : '');
-
-        const img = document.createElement('img');
-        img.alt = '';
-        img.src = task.img;
-
-        const info = document.createElement('div');
-        info.className = 'info';
-
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-
-        const pill = document.createElement('div');
-        pill.className = 'pill';
-        const dot = document.createElement('span');
-        const b = document.createElement('b');
-        b.textContent = task.done ? 'DONE' : 'OPEN';
-        pill.append(dot, b);
-
-        const time = document.createElement('div');
-        time.textContent = new Date(task.time).toLocaleString();
-
-        meta.append(pill, time);
-
-        const h3 = document.createElement('h3');
-        h3.textContent = task.title;
-        const p = document.createElement('p');
-        p.textContent = task.desc || '説明なし';
-
-        info.append(meta, h3, p);
-
-        card.append(img, info);
-
-        card.addEventListener('pointermove', (e)=> tiltCard(card, e));
-        card.addEventListener('pointerleave', ()=> resetTilt(card));
-
-        card.addEventListener('click', ()=> showModal(task));
-
-        card.addEventListener('contextmenu', (e)=>{
+        card.onclick=function(){
+          t.done=!t.done;
+          save();
+          toast(t.done?'DONE':'UNDO');
+          render();
+        };
+        card.oncontextmenu=function(e){
           e.preventDefault();
-          task.done = !task.done;
-          b.textContent = task.done ? 'DONE' : 'OPEN';
-          card.classList.toggle('done');
-          save(tasks);
-          toast(task.done ? '完了!' : '戻した');
-        });
-
-        grid.append(card);
+          tasks=tasks.filter(x=>x.id!==t.id);
+          save();
+          toast('DELETE');
+          render();
+        };
+        ring.appendChild(card);
       });
     }
 
-    function init(){
-      loadTheme();
-      applyTheme();
-
-      let tasks = load();
-      render(tasks);
-
-      el('themeBtn').addEventListener('click', ()=>{ theme++; applyTheme(); storeTheme(); toast('Theme'); });
-      el('resetBtn').addEventListener('click', ()=>{
-        if(!confirm('全部消します。よろしいですか？')) return;
-        tasks=[]; save(tasks); render(tasks); toast('RESET');
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]||c;
       });
+    }
 
-      el('addBtn').addEventListener('click', ()=>{
-        const title = titleInput.value.trim();
-        const desc = descInput.value.trim();
-        if(!title) return toast('タイトル入れて');
-        const a = artData[Math.floor(Math.random()*artData.length)];
-        tasks.unshift({id:randomId(), title, desc, img:a.img, done:false, time:Date.now()});
-        save(tasks); render(tasks);
-        titleInput.value=''; descInput.value=''; titleInput.focus();
-        toast('ADDED');
+    // controls
+    $('add').onclick=function(){
+      const title=(titleInput.value||'').trim();
+      const desc=(descInput.value||'').trim();
+      if(!title){toast('タイトル入れて'); return;}
+      tasks.unshift({
+        id: Math.random().toString(16).slice(2),
+        title,
+        desc,
+        done:false,
+        time: Date.now()
       });
+      titleInput.value='';
+      descInput.value='';
+      save();
+      render();
+      toast('ADDED');
+    };
 
-      titleInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter') el('addBtn').click(); });
+    $('auto').onclick=function(){
+      auto=!auto;
+      toast(auto?'AUTO':'PAUSE');
+    };
 
-      el('loadDefault').addEventListener('click', ()=>{
-        tasks = artData.slice(0,5).map(a=>({id:randomId(), title:a.title, desc:a.desc, img:a.img, done:false, time:Date.now()}));
-        save(tasks); render(tasks); toast('Default loaded');
-      });
-
-      el('addDemo').addEventListener('click', ()=>{
-        const a = artData[Math.floor(Math.random()*artData.length)];
-        addBtn.click();
-      });
-
-      document.addEventListener('keydown', (e)=>{
-        if(e.key.toLowerCase()==='h') el('themeBtn').click();
-      });
-
-      el('modalClose').addEventListener('click', closeModal);
-      modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
-
-      document.addEventListener('pointermove', (e)=>{
-        cursor.style.left = e.clientX+'px';
-        cursor.style.top = e.clientY+'px';
-      });
-
-      // bg canvas
-      const canvas = document.getElementById('bg');
-      const ctx = canvas.getContext('2d');
-      function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-      resize();
-      addEventListener('resize', resize);
-
-      let t = 0;
-      function bg(){
-        t += 0.018;
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0,0,w,h);
-        ctx.fillStyle = '#070914';
-        ctx.fillRect(0,0,w,h);
-
-        for(let i=0;i<7;i++){
-          const x = (w/2) + Math.sin(t+i*0.62)*w*0.28;
-          const y = (h/2) + Math.cos(t+i*0.48)*h*0.22;
-          const r = (w+h)*0.14;
-
-          ctx.save();
-          ctx.translate(x,y);
-          ctx.rotate(t*0.35 + i);
-          const grad = ctx.createRadialGradient(0,0,0,0,0,r);
-
-          const a = i%3===0?'#78e6ff':(i%3===1?'#ff6bd6':'#ffc86b');
-          grad.addColorStop(0, a);
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grad;
-          ctx.globalAlpha = 0.20;
-          ctx.beginPath();
-          ctx.ellipse(0,0,r,r*0.72,0,0,Math.PI*2);
-          ctx.fill();
-          ctx.restore();
-        }
-
-        ctx.globalAlpha = 0.09;
-        ctx.fillStyle = '#fff';
-        for(let i=0;i<40;i++){
-          ctx.fillRect(Math.random()*w, Math.random()*h, 1, 1);
-        }
-
-        requestAnimationFrame(bg);
+    $('shuffle').onclick=function(){
+      for(let i=tasks.length-1;i>0;i--){
+        const j=randInt(i+1);
+        const tmp=tasks[i];
+        tasks[i]=tasks[j];
+        tasks[j]=tmp;
       }
-      requestAnimationFrame(bg);
+      save();
+      render();
+      toast('SHUFFLE');
+    };
+
+    $('reset').onclick=function(){
+      if(!confirm('全部消します。よろしいですか？')) return;
+      tasks=[];
+      save();
+      render();
+      toast('RESET');
+    };
+
+    $('theme').onclick=function(){
+      themeIndex=(themeIndex+1)%themes.length;
+      applyTheme();
+      toast('THEME '+(themeIndex+1));
+    };
+
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Enter' && document.activeElement===titleInput) $('add').click();
+      if(e.key.toLowerCase()==='h') $('auto').click();
+    });
+
+    stage.addEventListener('pointerdown', function(e){
+      dragging=true;
+      lastX=e.clientX;
+      stage.setPointerCapture && stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener('pointermove', function(e){
+      if(!dragging) return;
+      const dx=e.clientX-lastX;
+      lastX=e.clientX;
+      target += dx*0.35;
+      vel = dx*0.35;
+    });
+    stage.addEventListener('pointerup', ()=>dragging=false);
+    stage.addEventListener('pointercancel', ()=>dragging=false);
+
+    function tick(){
+      rotation += (target-rotation)*0.06 + vel*0.04;
+      vel*=0.92;
+      ring.style.transform='translateZ(calc(var(--radius)*-1)) rotateY('+rotation+'deg)';
+      requestAnimationFrame(tick);
     }
 
-    init();
+    setInterval(function(){
+      if(auto && !dragging){
+        target += 0.65;
+      }
+    }, 16);
+
+    window.addEventListener('resize', render);
+
+    applyTheme();
+    load();
+    if(tasks.length===0){
+      tasks=[
+        {id:'a1', title:'Nebula Spin', desc:'回るToDo。ギャラリー感。', done:false, time:Date.now()},
+        {id:'a2', title:'Light Pulse', desc:'カード光パルス', done:false, time:Date.now()},
+        {id:'a3', title:'Drag Rotate', desc:'ドラッグで回転', done:false, time:Date.now()},
+        {id:'a4', title:'Theme Cycle', desc:'THEMEボタン', done:false, time:Date.now()}
+      ];
+      save();
+    }
+    render();
+    tick();
+  })();
   </script>
 </body>
 </html>
